@@ -23,6 +23,6 @@ describe('AiService', () => {
     expect(out.content).toBe('hello post #dev');
     expect(chat).toHaveBeenCalled();
     const messages = (chat.mock.calls[0] as unknown as { content: string }[][])[0];
-    expect(messages[0].content).toContain('Never invent');
+    expect(messages[0].content).toContain('Return ONLY the post text');
   });
 });

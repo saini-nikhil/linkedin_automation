@@ -7,6 +7,12 @@ import {
   LinkedInPostResult,
   LinkedInTokenResponse,
 } from './types';
+import {
+  escapeLinkedInCommentary,
+  getLinkedInTextStats,
+  sanitizeLinkedInText,
+  validateLinkedInText,
+} from './utils/linkedin-text.util';
 
 // Official LinkedIn API endpoints (verified Sept 2024+ / 2025 docs):
 // - OAuth: https://www.linkedin.com/oauth/v2/authorization + /accessToken
@@ -118,9 +124,18 @@ export class LinkedInClient {
     memberId: string,
     text: string,
   ): Promise<LinkedInPostResult> {
+    // Canonical content: the SAME text Telegram previewed. Sanitize + validate,
+    // never silently truncate. Escaping below is wire-format only (little-text).
+    const canonical = sanitizeLinkedInText(text);
+    validateLinkedInText(canonical);
+    const stats = getLinkedInTextStats(canonical);
+    this.logger.log(
+      `LinkedIn publish: chars=${stats.chars} lines=${stats.lines} ` +
+        `head=${JSON.stringify(stats.first80)} tail=${JSON.stringify(stats.last80)}`,
+    );
     const payload = {
       author: `urn:li:person:${memberId}`,
-      commentary: text,
+      commentary: escapeLinkedInCommentary(canonical),
       visibility: 'PUBLIC',
       distribution: {
         feedDistribution: 'MAIN_FEED',
@@ -132,7 +147,7 @@ export class LinkedInClient {
     };
     try {
       this.logger.log(
-        `Posting ${text.length} chars with LinkedIn-Version=${this.apiVersion}`,
+        `Posting ${stats.chars} chars with LinkedIn-Version=${this.apiVersion}`,
       );
       const res = await firstValueFrom(
         this.http.post(LINKEDIN_POSTS_URL, payload, {

@@ -14,6 +14,10 @@ import { PostStyle } from '../common/constants/post-style.enum';
 import { AiService } from '../ai/ai.service';
 import { PROMPT_VERSION } from '../ai/prompts/linkedin-post.prompt';
 import { CreatePostDto } from './dto/create-post.dto';
+import {
+  sanitizeLinkedInText,
+  validateLinkedInText,
+} from '../linkedin/utils/linkedin-text.util';
 
 @Injectable()
 export class PostsService {
@@ -32,6 +36,17 @@ export class PostsService {
     if (post.userId !== userId) {
       throw new ForbiddenException('You do not own this post');
     }
+  }
+
+  /**
+   * The ENTIRE AI response is the post body — never split off a first line
+   * as a title. Sanitize + validate once here so the saved row is the
+   * canonical content shown in the Telegram preview AND sent to LinkedIn.
+   */
+  private prepareCanonicalContent(generatedText: string): string {
+    const canonical = sanitizeLinkedInText(generatedText);
+    validateLinkedInText(canonical);
+    return canonical;
   }
 
   async findForUser(
@@ -91,7 +106,7 @@ export class PostsService {
         style: post.style,
         historySummary,
       });
-      post.content = content;
+      post.content = this.prepareCanonicalContent(content);
       post.generationModel = model;
       post.promptVersion = PROMPT_VERSION;
       post.status = PostStatus.PENDING_APPROVAL;
@@ -133,7 +148,7 @@ export class PostsService {
         style,
         historySummary: this.ai.buildHistorySummary(history),
       });
-      post.content = generated;
+      post.content = this.prepareCanonicalContent(generated);
       post.generationModel = model;
       post.promptVersion = PROMPT_VERSION;
       post.status = PostStatus.PENDING_APPROVAL;
@@ -194,7 +209,7 @@ export class PostsService {
           history.filter((h) => h.id !== post.id),
         ),
       });
-      post.content = content;
+      post.content = this.prepareCanonicalContent(content);
       post.generationModel = model;
       post.promptVersion = PROMPT_VERSION;
       post.status = PostStatus.PENDING_APPROVAL;
@@ -216,13 +231,14 @@ export class PostsService {
       const post = await repo.findOne({ where: { id } });
       if (!post) throw new NotFoundException('Post not found');
       if (post.userId !== userId) throw new ForbiddenException('Not your post');
+      const canonical = this.prepareCanonicalContent(newContent);
       const edit = editRepo.create({
         postId: post.id,
         oldContent: post.content,
-        newContent,
+        newContent: canonical,
       });
       await editRepo.save(edit);
-      post.content = newContent;
+      post.content = canonical;
       if (post.status === PostStatus.APPROVED || post.status === PostStatus.SCHEDULED) {
         post.status = PostStatus.PENDING_APPROVAL;
       }
