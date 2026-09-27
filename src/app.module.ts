@@ -16,6 +16,11 @@ import { AiModule } from './ai/ai.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { LinkedInModule } from './linkedin/linkedin.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { JobsModule } from './jobs/jobs.module';
+import { ApplicationsModule } from './applications/applications.module';
+import { CareerModule } from './career/career.module';
+import { ResumeModule } from './resume/resume.module';
+import { NetworkingModule } from './networking/networking.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
 @Module({
@@ -44,6 +49,11 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     TelegramModule,
     LinkedInModule,
     SchedulerModule,
+    JobsModule,
+    ApplicationsModule,
+    CareerModule,
+    ResumeModule,
+    NetworkingModule,
   ],
   providers: [
     DatabaseService,

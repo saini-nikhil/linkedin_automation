@@ -20,6 +20,12 @@ export class UsersService {
     return this.users.findOne({ where: { id } });
   }
 
+  /** All user ids (daily cron loops). */
+  async findAllIds(): Promise<string[]> {
+    const rows = await this.users.find({ select: ['id'] });
+    return rows.map((r) => r.id);
+  }
+
   /** Find or create a user row for a Telegram sender. Never stores tokens here. */
   async ensureFromTelegram(
     telegramId: string,

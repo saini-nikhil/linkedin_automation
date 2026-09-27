@@ -55,6 +55,26 @@ class EnvVariables {
   @IsString()
   LINKEDIN_API_VERSION?: string;
 
+  @IsNumberString()
+  @IsOptional()
+  MAX_JOBS_PER_SOURCE?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  MAX_MATCHED_JOBS_PER_DAY?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  MAX_NETWORKING_MATCHES_PER_DAY?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  MAX_MESSAGES_PER_DAY?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  MAX_REGENERATIONS?: string;
+
   @IsNotEmpty()
   @IsOptional()
   APP_BASE_URL?: string;

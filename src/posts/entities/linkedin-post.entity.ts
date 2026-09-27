@@ -68,6 +68,21 @@ export class LinkedInPost {
   @Column({ type: 'text', nullable: true })
   errorMessage!: string | null;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  topic!: string | null;
+
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  topicCategory!: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  approvedAt!: Date | null;
+
+  @Column({ type: 'text', array: true, default: '{}' })
+  sourceUrls!: string[];
+
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  rejectionReason!: string | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 

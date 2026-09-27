@@ -178,6 +178,7 @@ export class PostsService {
         );
       }
       post.status = PostStatus.APPROVED;
+      post.approvedAt = new Date();
       post.errorMessage = null;
       return repo.save(post);
     });
@@ -186,6 +187,16 @@ export class PostsService {
   async reject(id: string, userId: string): Promise<LinkedInPost> {
     const post = await this.findOneForUser(id, userId);
     post.status = PostStatus.REJECTED;
+    return this.posts.save(post);
+  }
+
+  async setRejectionReason(
+    id: string,
+    userId: string,
+    reason: string,
+  ): Promise<LinkedInPost> {
+    const post = await this.findOneForUser(id, userId);
+    post.rejectionReason = reason.slice(0, 32);
     return this.posts.save(post);
   }
 
@@ -255,7 +266,7 @@ export class PostsService {
       const post = await repo.findOne({ where: { id } });
       if (!post) throw new NotFoundException('Post not found');
       if (post.userId !== userId) throw new ForbiddenException('Not your post');
-      if (post.status !== PostStatus.APPROVED && post.status !== PostStatus.PENDING_APPROVAL && post.status !== PostStatus.SCHEDULED) {
+      if (post.status !== PostStatus.APPROVED && post.status !== PostStatus.SCHEDULED) {
         throw new BadRequestException(
           `Cannot schedule post in status ${post.status}. Approve it first.`,
         );
@@ -322,12 +333,18 @@ export class PostsService {
     return this.posts.save(post);
   }
 
+  /** Immediate publish requires an approval record (APPROVED/SCHEDULED). */
   async markPublishing(id: string, userId: string): Promise<LinkedInPost> {
     return this.dataSource.transaction(async (manager) => {
       const repo = manager.getRepository(LinkedInPost);
       const post = await repo.findOne({ where: { id } });
       if (!post) throw new NotFoundException('Post not found');
       if (post.userId !== userId) throw new ForbiddenException('Not your post');
+      if (post.status !== PostStatus.APPROVED && post.status !== PostStatus.SCHEDULED) {
+        throw new BadRequestException(
+          `Cannot publish post in status ${post.status}. Approve it first.`,
+        );
+      }
       post.status = PostStatus.PUBLISHING;
       return repo.save(post);
     });

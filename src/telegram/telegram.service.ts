@@ -44,6 +44,22 @@ export class TelegramService {
     return new Date(utc);
   }
 
+  todayAt(hour: number, minute = 0, timeZone = 'Asia/Kolkata'): Date {
+    // "Today at hour:minute" IST; rolls to tomorrow if the time passed.
+    void timeZone;
+    const now = new Date();
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const istNow = new Date(now.getTime() + istOffsetMs);
+    const y = istNow.getUTCFullYear();
+    const mo = istNow.getUTCMonth();
+    const d = istNow.getUTCDate();
+    let utc = Date.UTC(y, mo, d, hour, minute, 0) - istOffsetMs;
+    if (utc <= now.getTime() + 60 * 1000) {
+      utc += 24 * 60 * 60 * 1000;
+    }
+    return new Date(utc);
+  }
+
   formatIST(date: Date): string {
     return new Intl.DateTimeFormat('en-IN', {
       timeZone: 'Asia/Kolkata',

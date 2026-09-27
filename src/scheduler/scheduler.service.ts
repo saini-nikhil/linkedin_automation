@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PostsService } from '../posts/posts.service';
+import { DailyContentService } from '../posts/daily-content.service';
 import { LinkedInService } from '../linkedin/linkedin.service';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class SchedulerService {
   constructor(
     private readonly posts: PostsService,
     private readonly linkedin: LinkedInService,
+    private readonly daily: DailyContentService,
   ) {}
 
   @Cron('* * * * *')
@@ -26,6 +28,7 @@ export class SchedulerService {
           claimed.content,
         );
         await this.posts.markPublished(claimed.id, linkedinPostId);
+        await this.daily.reflectPostStatus(claimed.id);
         this.logger.log(
           `Published post ${claimed.id} user=${claimed.userId} duration=${Date.now() - started}ms`,
         );
@@ -33,6 +36,7 @@ export class SchedulerService {
         const message =
           err instanceof Error ? err.message : String(err);
         await this.posts.markFailed(claimed.id, message);
+        await this.daily.reflectPostStatus(claimed.id);
         this.logger.error(`Failed publishing post ${claimed.id}: ${message}`);
       }
     }
@@ -46,10 +50,13 @@ export class SchedulerService {
         userId,
         publishing.content,
       );
-      return this.posts.markPublished(postId, linkedinPostId);
+      const done = await this.posts.markPublished(postId, linkedinPostId);
+      await this.daily.reflectPostStatus(postId);
+      return done;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await this.posts.markFailed(postId, message);
+      await this.daily.reflectPostStatus(postId);
       throw err;
     }
   }

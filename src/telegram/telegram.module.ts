@@ -6,6 +6,11 @@ import { LearningModule } from '../learning/learning.module';
 import { PostsModule } from '../posts/posts.module';
 import { LinkedInModule } from '../linkedin/linkedin.module';
 import { SchedulerModule } from '../scheduler/scheduler.module';
+import { CareerModule } from '../career/career.module';
+import { JobsModule } from '../jobs/jobs.module';
+import { ApplicationsModule } from '../applications/applications.module';
+import { ResumeModule } from '../resume/resume.module';
+import { NetworkingModule } from '../networking/networking.module';
 
 @Module({
   imports: [
@@ -14,6 +19,11 @@ import { SchedulerModule } from '../scheduler/scheduler.module';
     forwardRef(() => PostsModule),
     forwardRef(() => LinkedInModule),
     forwardRef(() => SchedulerModule),
+    CareerModule,
+    JobsModule,
+    ApplicationsModule,
+    ResumeModule,
+    NetworkingModule,
   ],
   providers: [TelegramBot, TelegramService],
   exports: [TelegramService],

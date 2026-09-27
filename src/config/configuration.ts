@@ -30,4 +30,19 @@ export default () => ({
   appBaseUrl: process.env.APP_BASE_URL ?? 'http://localhost:3000',
   timezone: process.env.TIMEZONE ?? 'Asia/Kolkata',
   logLevel: process.env.LOG_LEVEL ?? 'info',
+  career: {
+    maxJobsPerSource: parseInt(process.env.MAX_JOBS_PER_SOURCE ?? '30', 10),
+    maxMatchedJobsPerDay: parseInt(
+      process.env.MAX_MATCHED_JOBS_PER_DAY ?? '20',
+      10,
+    ),
+    maxNetworkingMatchesPerDay: parseInt(
+      process.env.MAX_NETWORKING_MATCHES_PER_DAY ?? '10',
+      10,
+    ),
+    maxMessagesPerDay: parseInt(process.env.MAX_MESSAGES_PER_DAY ?? '10', 10),
+  },
+  content: {
+    maxRegenerations: parseInt(process.env.MAX_REGENERATIONS ?? '3', 10),
+  },
 });

@@ -23,7 +23,8 @@ describe('SchedulerService', () => {
     const linkedin = {
       publishTextPost: jest.fn(async () => 'urn:li:share:123'),
     } as never;
-    const svc = new SchedulerService(posts as never, linkedin);
+    const daily = { reflectPostStatus: jest.fn() } as never;
+    const svc = new SchedulerService(posts as never, linkedin, daily);
     await svc.handleDuePosts();
     expect(postsTyped.markPublished).toHaveBeenCalledWith('p1', 'urn:li:share:123');
   });
@@ -44,7 +45,8 @@ describe('SchedulerService', () => {
         throw new Error('403 forbidden');
       }),
     } as never;
-    const svc = new SchedulerService(posts as never, linkedin);
+    const daily = { reflectPostStatus: jest.fn() } as never;
+    const svc = new SchedulerService(posts as never, linkedin, daily);
     await svc.handleDuePosts();
     expect(postsTyped.markFailed).toHaveBeenCalled();
     expect(postsTyped.markPublished).not.toHaveBeenCalled();
